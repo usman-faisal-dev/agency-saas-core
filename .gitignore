@@ -1,0 +1,70 @@
+# ==============================
+# Environment & secrets
+# ==============================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ==============================
+# Node / Next.js (frontend/)
+# ==============================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel/
+frontend/*.tsbuildinfo
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-store/
+frontend/coverage/
+
+# ==============================
+# Python / FastAPI (backend/)
+# ==============================
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/*.egg-info/
+backend/dist/
+backend/build/
+backend/htmlcov/
+backend/.coverage
+backend/celerybeat-schedule
+backend/celerybeat.pid
+
+# ==============================
+# Database / migrations local state
+# ==============================
+*.sqlite3
+*.db
+
+# ==============================
+# Generated reports / local artifacts (do not commit generated PDFs)
+# ==============================
+backend/app/pillars/reporting/generated/
+*.pdf
+
+# ==============================
+# Editor / OS
+# ==============================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Logs
+# ==============================
+*.log
+logs/
