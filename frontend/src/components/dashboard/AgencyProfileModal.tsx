@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { apiClient } from "@/lib/api-client";
+import { useApiClient } from "@/lib/api-client";
 import type { Organization } from "@/types/api";
 import styles from "./AgencyProfileModal.module.css";
 
@@ -12,6 +12,7 @@ interface Props {
 }
 
 export default function AgencyProfileModal({ org, onClose, onSaved }: Props) {
+  const callApi = useApiClient();
   const [name, setName] = useState(org?.name ?? "");
   const [logoUrl, setLogoUrl] = useState(org?.logo_url ?? "");
   const [logoPreview, setLogoPreview] = useState(org?.logo_url ?? "");
@@ -42,7 +43,7 @@ export default function AgencyProfileModal({ org, onClose, onSaved }: Props) {
     setSaving(true);
     setError("");
     try {
-      const updated = await apiClient<Organization>("/api/v1/organizations/me", {
+      const updated = await callApi<Organization>("/api/v1/organizations/me", {
         method: "PATCH",
         body: JSON.stringify({
           name: name.trim(),

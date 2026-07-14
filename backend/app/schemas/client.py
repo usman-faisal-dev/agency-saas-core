@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 class ClientCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
-    logo_url: str | None = Field(None, max_length=2048)
+    logo_url: str | None = Field(None)
 
 
 class ClientRead(BaseModel):
@@ -24,4 +24,4 @@ class ClientRead(BaseModel):
 
 class ClientUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=255)
-    logo_url: str | None = Field(None, max_length=2048)
+    logo_url: str | None = Field(None)

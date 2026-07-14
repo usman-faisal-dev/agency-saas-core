@@ -5,23 +5,24 @@ import { useAuth } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 import AgencyProfileModal from "@/components/dashboard/AgencyProfileModal";
 import ClientList from "@/components/dashboard/ClientList";
-import { apiClient } from "@/lib/api-client";
+import { useApiClient } from "@/lib/api-client";
 import type { Organization } from "@/types/api";
 import styles from "./page.module.css";
 
 export default function DashboardPage() {
   const { isLoaded } = useAuth();
+  const callApi = useApiClient();
   const [org, setOrg] = useState<Organization | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoaded) return;
-    apiClient<Organization>("/api/v1/organizations/me")
+    callApi<Organization>("/api/v1/organizations/me")
       .then(setOrg)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [isLoaded]);
+  }, [isLoaded, callApi]);
 
   const handleOrgSaved = (updated: Organization) => {
     setOrg(updated);

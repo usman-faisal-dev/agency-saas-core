@@ -21,6 +21,7 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.pnpm-store/
 frontend/coverage/
+frontend/next-env.d.ts
 
 # ==============================
 # Python / FastAPI (backend/)

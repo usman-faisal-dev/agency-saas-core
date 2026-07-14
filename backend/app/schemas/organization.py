@@ -19,4 +19,4 @@ class OrganizationRead(BaseModel):
 class OrganizationUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=255)
     # logo_url accepts a URL string or a base64 data URI (MVP approach — no cloud storage needed)
-    logo_url: str | None = Field(None, max_length=2048)
+    logo_url: str | None = Field(None)

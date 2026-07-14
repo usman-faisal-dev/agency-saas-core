@@ -14,6 +14,7 @@
  */
 
 import { useAuth } from "@clerk/nextjs";
+import { useCallback } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -63,7 +64,12 @@ export async function apiClient<T = unknown>(
     let detail = `API error ${res.status}`;
     try {
       const body = await res.json();
-      detail = body?.detail ?? detail;
+      if (Array.isArray(body?.detail)) {
+        // FastAPI validation errors (422) return an array of error objects
+        detail = body.detail.map((e: any) => e.msg || JSON.stringify(e)).join(", ");
+      } else {
+        detail = body?.detail ?? detail;
+      }
     } catch {
       // Non-JSON error body — keep the default message
     }
@@ -89,11 +95,11 @@ export async function apiClient<T = unknown>(
 export function useApiClient() {
   const { getToken } = useAuth();
 
-  return async function call<T = unknown>(
+  return useCallback(async function call<T = unknown>(
     path: string,
     init: RequestInit = {},
   ): Promise<T> {
     const token = await getToken();
     return apiClient<T>(path, init, token);
-  };
+  }, [getToken]);
 }

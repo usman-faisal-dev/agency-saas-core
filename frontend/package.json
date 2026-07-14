@@ -10,20 +10,21 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@clerk/clerk-js": "^6.25.3",
+    "@clerk/nextjs": "^5.2.4",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.400.0",
     "next": "14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@clerk/nextjs": "^5.2.4",
-    "recharts": "^2.12.7",
-    "lucide-react": "^0.400.0",
-    "clsx": "^2.1.1"
+    "recharts": "^2.12.7"
   },
   "devDependencies": {
-    "typescript": "^5.5.3",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5"
+    "eslint-config-next": "14.2.5",
+    "typescript": "^5.5.3"
   }
 }
