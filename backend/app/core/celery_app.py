@@ -24,26 +24,17 @@ def create_celery_app() -> Celery:
             "app.tasks.report_generation",
         ],
     )
-    
-    # Configure baseline settings
-    celery_settings = {
-        "task_serializer": "json",
-        "result_serializer": "json",
-        "accept_content": ["json"],
-        "timezone": "UTC",
-        "enable_utc": True,
-        "task_track_started": True,
-        "task_acks_late": True,
-        "worker_prefetch_multiplier": 1,
-    }
-
-    # If running in production on Render, run tasks synchronously (eager mode)
-    # to avoid needing a paid dedicated background worker.
-    if settings.environment == "production":
-        celery_settings["task_always_eager"] = True
-        celery_settings["task_eager_propagates"] = True
-
-    app.conf.update(**celery_settings)
+    app.conf.update(
+        task_serializer="json",
+        result_serializer="json",
+        accept_content=["json"],
+        timezone="UTC",
+        enable_utc=True,
+        # Prevent tasks from silently swallowing exceptions
+        task_track_started=True,
+        task_acks_late=True,
+        worker_prefetch_multiplier=1,
+    )
     return app
 
 
