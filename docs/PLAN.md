@@ -13,15 +13,15 @@
 - Initialize Next.js app, deploy to Vercel (even as a blank page) — prove the deploy pipeline first.
 - Initialize FastAPI app, deploy to Render as a web service — prove it responds.
 - Provision Neon Postgres; connect FastAPI via SQLAlchemy/Alembic (or your ORM of choice).
-- Provision Redis on Render; stand up Celery worker as a second Render service; run a trivial test task end-to-end.
+- Provision Redis on Render; stand up a Celery worker as a co-located background process alongside Uvicorn inside the same free Render Web Service container (using `wait -n` orchestration); run a trivial test task end-to-end.
 - Integrate Clerk on the Next.js frontend; wire a single-role session through to FastAPI (JWT verification middleware).
 - Create core tables per SPEC.md §5.1: `organizations`, `users`, `clients` (migration only — other tables come in later phases as needed).
 - Implement the `org_id` scoping pattern as a reusable query helper/dependency in FastAPI (not enforced yet everywhere, but the pattern exists and is used from the first query onward).
-- Build the Agency Profile modal (name + logo upload) on the Dashboard header shell.
+- Build the Agency Profile modal (name + logo upload) on the Dashboard header shell integrated directly with Cloudflare R2 object storage via an abstract `StorageProvider` interface
 
-**Demo checkpoint:** A user can sign up via Clerk, land on an (empty) Dashboard, set their agency name/logo, and the whole stack (Vercel ↔ Render ↔ Neon ↔ Redis/Celery) is proven live, not just local.
+**Demo checkpoint:** A user can sign up via Clerk, land on an (empty) Dashboard, set their agency name/logo, and the whole stack (Vercel ↔ Render ↔ Neon ↔ Redis/Celery ↔ Cloudflare R2) is proven live, not just local.
 
-**Deliverable artifacts:** Alembic migration files, Clerk integration, deployed URLs for both services.
+**Deliverable artifacts:** Alembic migration files, Clerk integration, Cloudflare R2 integration + tenant-isolation tests, deployed URLs for both services.
 
 ---
 
@@ -31,6 +31,8 @@
 
 **Tasks:**
 - `clients` CRUD: add client (name, logo), list clients on Dashboard.
+  - **Logo upload reuses the Phase 0 storage module** (`upload_logo()` / the existing `/api/v1/upload/logo` endpoint) — do not reimplement upload logic or introduce a second storage path for clients.
+  - Extend the R2 key convention to be client-scoped: `logos/{org_id}/clients/{client_id}/{uuid}.{ext}`, keeping the same org-prefix isolation guarantee established in Phase 0.
 - Migration: `connected_accounts` table per SPEC.md §5.1.
 - Build the field-level encryption utility for `access_token_encrypted` / `refresh_token_encrypted` (e.g. Fernet/cryptography lib with a key from env/secrets manager) — this is a standalone, testable module.
 - Build the "Connect GA4" / "Connect Google Ads" buttons on the Client Detail page: on click, simulate success, write encrypted sandbox-derived credentials (from hardcoded env vars) into `connected_accounts`, set `status = connected`.
@@ -109,6 +111,7 @@
 
 **Tasks:**
 - **pytest deliverable:** tenant isolation test suite — create two clients under different simulated scenarios, assert every data-fetching function/endpoint scoped to client A never returns client B's rows (metrics, reports, chat messages).
+  - **Extends** `tests/test_upload_isolation.py` (from Phase 0) with metrics/reports/chat coverage — does not duplicate the upload-path isolation tests already passing.
 - Manual pass: click through every screen as a second client to visually confirm no cross-client leakage in the UI.
 - Fix any rough edges surfaced by the above.
 - Final polish: loading states, error states (failed backfill, failed generation), empty states (no clients yet, no reports yet).
@@ -121,6 +124,7 @@
 ## Cross-Cutting Notes (apply throughout, not phase-specific)
 
 - **LLM provider swap:** at no point should any phase's code call Groq/OpenAI/Anthropic SDKs directly outside the `LLMProvider` interface module. Violating this in a "just this once" moment is the most likely silent scope-creep risk in the whole plan.
+- **Storage provider boundary:** at no point should any phase's code call `boto3`/R2 directly outside the `storage/` module (`StorageProvider` interface, `upload_logo()`/`delete_logo()`). Any future file type (report assets, client-uploaded documents) goes through the same interface — this is the same discipline as the LLM rule, for the same reason.
 - **Cadence-agnostic reports:** the `generate_report(client_id, start_date, end_date)` function must never be modified to assume "on-demand" — it should look identical whether called from a button click or a future Celery Beat schedule.
 - **Ratios:** never introduce a stored ratio column anywhere, ever, even as a "just for caching" shortcut — this was explicitly identified as a correctness risk.
 - **Every new tenant-scoped table** must include `org_id` or a traceable path to it (via `client_id`) from the moment it's created — retrofitting this later is expensive; adding it now is free.

@@ -57,10 +57,13 @@ These are the load-bearing decisions from discovery. Each one deliberately narro
 | Billing | None | Explicitly out of scope |
 | LLM | Groq (free tier) behind a vendor-agnostic `LLMProvider` interface | Anthropic/OpenAI clients present but toggled off via env var |
 | Email | Resend | Manual send trigger only |
+| File storage | Cloudflare R2 behind a vendor-agnostic `StorageProvider` interface | `boto3`-based, S3-compatible; org/client-scoped key prefixes for isolation |
 | PDF rendering | HTML → PDF (WeasyPrint or Playwright) | Text/table templates only, no chart images |
 | Testing | pytest | Targeted, not exhaustive |
 
 **Vendor-agnostic LLM contract:** all narrative/chat calls go through a single internal interface (e.g. `generate_narrative(prompt, context) -> text`), with Groq/OpenAI/Anthropic as interchangeable backends selected by a single environment variable. No calling code should ever reference a provider SDK directly.
+
+**Vendor-agnostic storage contract:** all file uploads (agency logos, client logos, and any future asset type) go through a single internal interface (`StorageProvider.upload()` / `.delete()`), with R2 as the only implementation for MVP but S3/other backends swappable via the same interface. No calling code should ever reference `boto3` or an R2 endpoint directly outside the `storage/` module.
 
 ---
 
@@ -71,6 +74,7 @@ These are the load-bearing decisions from discovery. Each one deliberately narro
 **`organizations`**
 - `id`, `name`, `logo_url`, `created_at`
 - Single row for MVP; `org_id` foreign key exists on all tenant tables to make future multi-org support a config change, not a migration.
+- `logo_url` is a reference to a file stored in Cloudflare R2 (via the `StorageProvider` interface, §4) — never a base64/data URI. Uploaded through `POST /api/v1/upload/logo`, key convention `logos/{org_id}/{uuid}.{ext}`.
 
 **`users`**
 - `id`, `clerk_user_id`, `org_id`, `email`, `created_at`
@@ -78,6 +82,7 @@ These are the load-bearing decisions from discovery. Each one deliberately narro
 
 **`clients`**
 - `id`, `org_id`, `name`, `logo_url`, `created_at`
+- `logo_url` follows the same storage convention as `organizations.logo_url` — same upload endpoint and `StorageProvider`, client-scoped key: `logos/{org_id}/clients/{client_id}/{uuid}.{ext}`.
 
 **`connected_accounts`**
 - `id`, `client_id`, `provider` (`ga4` | `google_ads`), `status`, `access_token_encrypted`, `refresh_token_encrypted`, `token_expiry`, `created_at`
@@ -109,6 +114,7 @@ These are the load-bearing decisions from discovery. Each one deliberately narro
 - Every tenant-relevant table carries `org_id` (directly or via `client_id → clients.org_id`).
 - Enforcement is **app-layer** (every query explicitly scoped), **not** Postgres RLS, for MVP.
 - Schema is RLS-ready: adding `ENABLE ROW LEVEL SECURITY` + policies post-MVP requires no column changes.
+- Isolation extends to file storage, not just DB rows: R2 object keys are always org-prefixed (and client-prefixed where applicable), and `org_id` used in key generation is always resolved server-side from the authenticated session — never from client-supplied input. Covered by `tests/test_upload_isolation.py`.
 
 ---
 
@@ -133,7 +139,7 @@ These are the load-bearing decisions from discovery. Each one deliberately narro
 | Area | MVP Requirement |
 |---|---|
 | Tenancy | App-layer `org_id`/`client_id` scoping on every tenant query; schema RLS-ready |
-| Security | Token columns encrypted at rest (even though populated from sandbox env vars); tokens never logged or returned in API responses |
+| Security | Token columns encrypted at rest (even though populated from sandbox env vars); tokens never logged or returned in API responses. File uploads validated by content (not client-supplied MIME/extension) via Pillow; SVG rejected outright (XSS vector) |
 | Reliability | `job_runs` audit log on every backfill and report generation attempt; basic retry on external API calls |
 | Performance | Report generation (on-demand) completes and is reviewable within minutes of trigger |
 | LLM cost | $0 — Groq free tier for all dev/demo narrative and chat generation |
