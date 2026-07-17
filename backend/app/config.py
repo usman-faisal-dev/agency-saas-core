@@ -61,6 +61,13 @@ class Settings(BaseSettings):
     # ---- Email / Resend (Phase 4) ----
     resend_api_key: str = ""
 
+    # ---- File Storage / Cloudflare R2 ----
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = "agency-saas-logos"
+    r2_public_url: str = ""  # Required: custom domain or R2 dev URL for serving files
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

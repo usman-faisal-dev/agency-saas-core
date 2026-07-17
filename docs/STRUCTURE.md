@@ -6,7 +6,9 @@ agency-saas-core/
 │   │   │   ├── (auth)/                # Clerk sign-in/sign-up routes
 │   │   │   ├── dashboard/
 │   │   │   │   ├── page.tsx           # Client list + Agency Profile modal trigger
-│   │   │   │   └── layout.tsx
+│   │   │   │   ├── page.module.css
+│   │   │   │   ├── layout.tsx
+│   │   │   │   └── layout.module.css
 │   │   │   ├── clients/
 │   │   │   │   └── [clientId]/
 │   │   │   │       ├── page.tsx       # Client Detail: charts, connect buttons, chat panel entry
@@ -17,7 +19,9 @@ agency-saas-core/
 │   │   ├── components/
 │   │   │   ├── dashboard/
 │   │   │   │   ├── AgencyProfileModal.tsx
-│   │   │   │   └── ClientList.tsx
+│   │   │   │   ├── AgencyProfileModal.module.css
+│   │   │   │   ├── ClientList.tsx
+│   │   │   │   └── ClientList.module.css
 │   │   │   ├── client-detail/
 │   │   │   │   ├── ConnectAccountButton.tsx
 │   │   │   │   ├── MetricsChart.tsx
@@ -41,7 +45,10 @@ agency-saas-core/
 │   │   ├── types/
 │   │   │   └── api.ts                 # Shared TS types mirroring backend Pydantic schemas
 │   │   │
-│   │   └── styles/
+│   │   ├── styles/
+│   │   │   └── globals.css             # Global styles, CSS custom properties
+│   │   │
+│   │   └── middleware.ts               # Next.js middleware (Clerk auth guard)
 │   │
 │   ├── public/
 │   ├── .env.local.example
@@ -63,6 +70,7 @@ agency-saas-core/
 │   │   │   └── exceptions.py           # Shared exception types + handlers
 │   │   │
 │   │   ├── models/                     # SQLAlchemy models — one file per table
+│   │   │   ├── __init__.py             # Barrel export for all models
 │   │   │   ├── organization.py
 │   │   │   ├── user.py
 │   │   │   ├── client.py
@@ -74,6 +82,7 @@ agency-saas-core/
 │   │   │   └── chat_message.py
 │   │   │
 │   │   ├── schemas/                    # Pydantic request/response models
+│   │   │   ├── organization.py
 │   │   │   ├── client.py
 │   │   │   ├── connected_account.py
 │   │   │   ├── report.py
@@ -86,7 +95,8 @@ agency-saas-core/
 │   │   │   │   ├── metrics.py
 │   │   │   │   ├── reports.py
 │   │   │   │   ├── chat.py
-│   │   │   │   └── organizations.py    # Agency profile endpoint
+│   │   │   │   ├── organizations.py    # Agency profile endpoint
+│   │   │   │   └── upload.py           # File upload (logo → R2)
 │   │   │   └── router.py               # Aggregates all v1 routers
 │   │   │
 │   │   ├── integrations/               # Provider-abstracted data pull layer
@@ -118,6 +128,12 @@ agency-saas-core/
 │   │   │   ├── factory.py              # Selects provider based on LLM_PROVIDER env var
 │   │   │   └── chat_context_builder.py # Builds pre-aggregated snapshot for chat injection
 │   │   │
+│   │   ├── storage/                     # File storage abstraction (logos, future assets)
+│   │   │   ├── __init__.py             # upload_logo() / delete_logo() convenience helpers
+│   │   │   ├── interface.py             # Abstract StorageProvider base class
+│   │   │   ├── r2_provider.py           # Cloudflare R2 via boto3 (S3-compatible API)
+│   │   │   └── factory.py              # get_storage() — cached singleton, swap backend here
+│   │   │
 │   │   ├── email/
 │   │   │   └── resend_client.py         # Resend integration, "Approve & Send" logic
 │   │   │
@@ -134,7 +150,8 @@ agency-saas-core/
 │   │   ├── conftest.py                  # Fixtures: test DB, fixture clients/orgs
 │   │   ├── test_tenant_isolation.py     # Cross-client data leak checks
 │   │   ├── test_token_encryption.py     # Encrypt/decrypt round-trip
-│   │   └── test_report_pipeline.py      # Aggregation correctness + full pipeline
+│   │   ├── test_report_pipeline.py      # Aggregation correctness + full pipeline
+│   │   └── test_upload_isolation.py     # Upload endpoint tenant-isolation (org_id from session only)
 │   │
 │   ├── .env.example
 │   ├── alembic.ini

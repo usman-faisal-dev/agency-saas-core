@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useApiClient } from "@/lib/api-client";
-import type { Organization } from "@/types/api";
+import { useState, useRef, useEffect } from "react";
+import { useApiClient, useUploadFile } from "@/lib/api-client";
+import type { Organization, UploadResponse } from "@/types/api";
 import styles from "./AgencyProfileModal.module.css";
 
 interface Props {
@@ -13,14 +13,24 @@ interface Props {
 
 export default function AgencyProfileModal({ org, onClose, onSaved }: Props) {
   const callApi = useApiClient();
+  const upload = useUploadFile();
   const [name, setName] = useState(org?.name ?? "");
-  const [logoUrl, setLogoUrl] = useState(org?.logo_url ?? "");
   const [logoPreview, setLogoPreview] = useState(org?.logo_url ?? "");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  /** Convert uploaded file → base64 data URI stored as logo_url (MVP approach) */
+  // Revoke object URLs to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (logoPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(logoPreview);
+      }
+    };
+  }, [logoPreview]);
+
+  /** Store the raw File for later upload; show an object-URL preview */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -28,13 +38,10 @@ export default function AgencyProfileModal({ org, onClose, onSaved }: Props) {
       setError("Logo must be under 2 MB");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setLogoUrl(dataUrl);
-      setLogoPreview(dataUrl);
-    };
-    reader.readAsDataURL(file);
+    setError("");
+    setLogoFile(file);
+    // Use a blob URL for the preview — no base64 encoding
+    setLogoPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,11 +50,21 @@ export default function AgencyProfileModal({ org, onClose, onSaved }: Props) {
     setSaving(true);
     setError("");
     try {
+      let logoUrl: string | null = org?.logo_url ?? null;
+
+      // If a new file was selected, upload it first
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append("logo", logoFile);
+        const result = await upload<UploadResponse>("/api/v1/upload/logo", formData);
+        logoUrl = result.url;
+      }
+
       const updated = await callApi<Organization>("/api/v1/organizations/me", {
         method: "PATCH",
         body: JSON.stringify({
           name: name.trim(),
-          logo_url: logoUrl || null,
+          logo_url: logoUrl,
         }),
       });
       onSaved(updated);
@@ -104,12 +121,12 @@ export default function AgencyProfileModal({ org, onClose, onSaved }: Props) {
             <input
               ref={fileRef}
               type="file"
-              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              accept="image/png,image/jpeg,image/webp"
               style={{ display: "none" }}
               onChange={handleFileChange}
               id="input-logo-file"
             />
-            <p className={styles.logoHint}>PNG, JPG, WebP or SVG · max 2 MB</p>
+            <p className={styles.logoHint}>PNG, JPG or WebP · max 2 MB</p>
           </div>
 
           {/* Agency name */}

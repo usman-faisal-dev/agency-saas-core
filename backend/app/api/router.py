@@ -15,6 +15,7 @@ from app.api.v1 import (
     metrics,
     organizations,
     reports,
+    upload,
 )
 
 v1_router = APIRouter(prefix="/api/v1")
@@ -25,3 +26,4 @@ v1_router.include_router(connected_accounts.router)
 v1_router.include_router(metrics.router)
 v1_router.include_router(reports.router)
 v1_router.include_router(chat.router)
+v1_router.include_router(upload.router)

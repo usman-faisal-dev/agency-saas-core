@@ -127,6 +127,10 @@ export interface ChatMessage {
 // Common
 // ----------------------------------------------------------------
 
+export interface UploadResponse {
+  url: string;
+}
+
 export interface ApiError {
   detail: string;
 }

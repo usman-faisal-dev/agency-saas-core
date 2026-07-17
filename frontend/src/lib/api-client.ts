@@ -103,3 +103,58 @@ export function useApiClient() {
     return apiClient<T>(path, init, token);
   }, [getToken]);
 }
+
+/**
+ * uploadFile<T>(path, formData, token?)
+ *
+ * Multipart file upload helper. Does NOT set Content-Type (the browser sets it
+ * with the correct multipart/form-data boundary). Use this for file upload
+ * endpoints like POST /api/v1/upload/logo.
+ */
+export async function uploadFile<T = unknown>(
+  path: string,
+  formData: FormData,
+  token?: string | null,
+): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let detail = `Upload error ${res.status}`;
+    try {
+      const body = await res.json();
+      detail = body?.detail ?? detail;
+    } catch {
+      // Non-JSON error body
+    }
+    throw new Error(detail);
+  }
+
+  return res.json() as Promise<T>;
+}
+
+/**
+ * useUploadFile()
+ *
+ * React hook that returns a pre-authenticated uploadFile bound to the
+ * current Clerk session token.
+ */
+export function useUploadFile() {
+  const { getToken } = useAuth();
+
+  return useCallback(async function upload<T = unknown>(
+    path: string,
+    formData: FormData,
+  ): Promise<T> {
+    const token = await getToken();
+    return uploadFile<T>(path, formData, token);
+  }, [getToken]);
+}
