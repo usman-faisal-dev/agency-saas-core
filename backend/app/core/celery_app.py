@@ -8,6 +8,7 @@ Usage:
   Start worker:  celery -A app.core.celery_app worker --loglevel=info
   Start beat  :  celery -A app.core.celery_app beat   --loglevel=info (Phase 3+)
 """
+
 from celery import Celery
 
 from app.config import get_settings

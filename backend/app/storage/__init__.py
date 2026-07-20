@@ -7,6 +7,7 @@ Usage from API endpoints:
     url = upload_logo(file_bytes, "logo.png", "image/png", org_id)
     delete_logo(key)
 """
+
 import uuid
 from pathlib import PurePosixPath
 
@@ -20,25 +21,34 @@ ALLOWED_IMAGE_TYPES: dict[str, str] = {
 }
 
 
-def upload_logo(data: bytes, filename: str, content_type: str, org_id: str) -> str:
+def upload_logo(
+    data: bytes,
+    filename: str,
+    content_type: str,
+    org_id: str,
+    client_id: str | None = None,
+) -> str:
     """
     Upload a logo file and return its public URL.
 
-    The key is namespaced by org_id for tenant isolation:
-        logos/{org_id}/{uuid}.{ext}
+    Key conventions:
+        Agency logo:  logos/{org_id}/{uuid}.{ext}
+        Client logo:  logos/{org_id}/clients/{client_id}/{uuid}.{ext}
 
     Args:
         data: Raw file bytes (already validated as a real image).
         filename: Original filename (used only for extension fallback).
         content_type: MIME type resolved by Pillow (authoritative).
         org_id: Authenticated org's ID (from FastAPI dependency, never client-supplied).
+        client_id: Optional client ID for client-scoped logo keys.
     """
     ext = (
-        ALLOWED_IMAGE_TYPES.get(content_type)
-        or PurePosixPath(filename).suffix.lstrip(".")
-        or "bin"
+        ALLOWED_IMAGE_TYPES.get(content_type) or PurePosixPath(filename).suffix.lstrip(".") or "bin"
     )
-    key = f"logos/{org_id}/{uuid.uuid4()}.{ext}"
+    if client_id:
+        key = f"logos/{org_id}/clients/{client_id}/{uuid.uuid4()}.{ext}"
+    else:
+        key = f"logos/{org_id}/{uuid.uuid4()}.{ext}"
     return get_storage().upload(key, data, content_type)
 
 

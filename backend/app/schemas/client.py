@@ -2,6 +2,7 @@
 Pydantic schemas for the Client resource.
 Mirrors the Client SQLAlchemy model for API request/response.
 """
+
 from datetime import datetime
 
 from pydantic import BaseModel, Field

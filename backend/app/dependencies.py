@@ -10,6 +10,7 @@ The org_id scoping pattern:
   Every route that accesses tenant data must declare `org_id: str = Depends(get_current_org)`.
   This ensures the pattern is used from the very first query onward (PLAN.md Phase 0 requirement).
 """
+
 import logging
 from typing import Annotated
 
@@ -17,7 +18,7 @@ from fastapi import Depends, Header
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.exceptions import AuthenticationError, NotFoundError
+from app.core.exceptions import AuthenticationError
 from app.core.security import verify_clerk_jwt
 from app.models.organization import Organization
 from app.models.user import User
@@ -48,7 +49,11 @@ def get_current_user(
     claims = verify_clerk_jwt(token)
 
     clerk_user_id: str = claims.get("sub", "")
-    email: str = claims.get("email", "") or claims.get("email_addresses", [{}])[0].get("email_address", "") if isinstance(claims.get("email_addresses"), list) else claims.get("email", "")
+    email: str = (
+        claims.get("email", "") or claims.get("email_addresses", [{}])[0].get("email_address", "")
+        if isinstance(claims.get("email_addresses"), list)
+        else claims.get("email", "")
+    )
 
     if not clerk_user_id:
         raise AuthenticationError("Token missing sub claim")

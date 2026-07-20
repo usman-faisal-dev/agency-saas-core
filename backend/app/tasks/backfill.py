@@ -2,6 +2,7 @@
 Celery task: 60-day historical backfill.
 Phase 2 implementation — stub present so Celery worker starts without import errors.
 """
+
 import logging
 
 from app.core.celery_app import celery_app

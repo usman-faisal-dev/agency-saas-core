@@ -6,6 +6,7 @@ Alembic environment configuration.
   Base.metadata and Alembic can auto-generate migrations with --autogenerate.
 - Supports both offline (SQL script) and online (direct DB) migration modes.
 """
+
 import os
 import sys
 from logging.config import fileConfig
@@ -16,10 +17,9 @@ from sqlalchemy import engine_from_config, pool
 # Ensure the backend/ directory is on the path so `app.*` imports resolve
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
-from app.config import get_settings
-
 # Import models so Alembic picks up their table definitions
 import app.models  # noqa: F401 — registers all models on Base.metadata
+from app.config import get_settings
 from app.core.database import Base
 
 # --------------------------------------------------------------------------

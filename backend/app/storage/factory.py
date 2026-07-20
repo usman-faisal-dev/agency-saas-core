@@ -4,6 +4,7 @@ Storage provider factory.
 Returns a cached singleton StorageProvider instance based on current settings.
 Currently always returns R2StorageProvider; swap the import here to change backends.
 """
+
 from functools import lru_cache
 
 from app.storage.interface import StorageProvider

@@ -2,6 +2,7 @@
 SQLAlchemy engine, session factory, and declarative base.
 All models import Base from here; never create a second one.
 """
+
 from collections.abc import Generator
 
 from sqlalchemy import create_engine
@@ -12,6 +13,7 @@ from app.config import get_settings
 
 class Base(DeclarativeBase):
     """Shared declarative base for all SQLAlchemy models."""
+
     pass
 
 

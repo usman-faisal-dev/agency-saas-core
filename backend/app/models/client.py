@@ -5,6 +5,7 @@ Every client belongs to an org_id — this is the primary tenant-scoping key.
 All queries touching clients MUST filter by org_id (enforced via the
 get_current_org dependency, not Postgres RLS in MVP).
 """
+
 import uuid
 from datetime import datetime
 
@@ -17,9 +18,7 @@ from app.core.database import Base
 class Client(Base):
     __tablename__ = "clients"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     org_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -32,6 +31,9 @@ class Client(Base):
     # Relationships
     organization: Mapped["Organization"] = relationship(  # noqa: F821
         "Organization", back_populates="clients", lazy="noload"
+    )
+    connected_accounts: Mapped[list["ConnectedAccount"]] = relationship(  # noqa: F821
+        "ConnectedAccount", back_populates="client", lazy="noload"
     )
 
     def __repr__(self) -> str:

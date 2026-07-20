@@ -77,6 +77,11 @@ export interface ConnectedAccount {
   // Note: encrypted token fields are NEVER returned by the API
 }
 
+export interface ConnectedAccountCreate {
+  client_id: string;
+  provider: Provider;
+}
+
 // ----------------------------------------------------------------
 // Report (Phase 3)
 // ----------------------------------------------------------------

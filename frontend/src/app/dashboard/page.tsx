@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 import AgencyProfileModal from "@/components/dashboard/AgencyProfileModal";
+import AddClientModal from "@/components/dashboard/AddClientModal";
 import ClientList from "@/components/dashboard/ClientList";
 import { useApiClient } from "@/lib/api-client";
-import type { Organization } from "@/types/api";
+import type { Client, Organization } from "@/types/api";
 import styles from "./page.module.css";
 
 export default function DashboardPage() {
@@ -14,6 +15,8 @@ export default function DashboardPage() {
   const callApi = useApiClient();
   const [org, setOrg] = useState<Organization | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [clientRefreshKey, setClientRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +30,11 @@ export default function DashboardPage() {
   const handleOrgSaved = (updated: Organization) => {
     setOrg(updated);
     setShowProfileModal(false);
+  };
+
+  const handleClientSaved = (_client: Client) => {
+    setShowAddClient(false);
+    setClientRefreshKey((k) => k + 1);
   };
 
   return (
@@ -77,9 +85,21 @@ export default function DashboardPage() {
       <div className={styles.body}>
         <div className={styles.titleRow}>
           <h1 className={styles.title}>Clients</h1>
-          {/* Add Client button lives here in Phase 1 */}
+          <button
+            id="btn-add-client-header"
+            className="btn btn-primary"
+            onClick={() => setShowAddClient(true)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Client
+          </button>
         </div>
-        <ClientList />
+        <ClientList
+          onAddClient={() => setShowAddClient(true)}
+          refreshKey={clientRefreshKey}
+        />
       </div>
 
       {/* ── Agency Profile Modal ── */}
@@ -88,6 +108,14 @@ export default function DashboardPage() {
           org={org}
           onClose={() => setShowProfileModal(false)}
           onSaved={handleOrgSaved}
+        />
+      )}
+
+      {/* ── Add Client Modal ── */}
+      {showAddClient && (
+        <AddClientModal
+          onClose={() => setShowAddClient(false)}
+          onSaved={handleClientSaved}
         />
       )}
     </div>

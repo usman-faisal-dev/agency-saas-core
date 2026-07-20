@@ -6,14 +6,13 @@ Security utilities:
 
 IMPORTANT: Tokens must NEVER appear in logs or API responses.
 """
-import base64
+
 import logging
 from functools import lru_cache
 
 import httpx
 from cryptography.fernet import Fernet, InvalidToken
-from jose import JWTError, jwk, jwt
-from jose.utils import base64url_decode
+from jose import JWTError, jwt
 
 from app.config import get_settings
 from app.core.exceptions import AuthenticationError
@@ -24,6 +23,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Clerk JWT verification
 # ---------------------------------------------------------------------------
+
 
 @lru_cache
 def _get_jwks() -> dict:
@@ -89,6 +89,7 @@ def verify_clerk_jwt(token: str) -> dict:
 # ---------------------------------------------------------------------------
 # Fernet field-level encryption (for token columns in connected_accounts)
 # ---------------------------------------------------------------------------
+
 
 def _get_fernet() -> Fernet:
     settings = get_settings()

@@ -5,6 +5,7 @@ All storage backends (R2, S3, local disk, etc.) implement this contract.
 The upload endpoint and service layer depend only on this interface —
 swapping backends is a config change in factory.py, not a rewrite.
 """
+
 from abc import ABC, abstractmethod
 
 

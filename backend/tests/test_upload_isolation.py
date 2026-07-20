@@ -6,6 +6,7 @@ authenticated session dependency (CurrentOrgId), never from any client-supplied
 value. A malicious client sending an org_id in form data, query params, or
 headers must NOT be able to write files under another org's key prefix.
 """
+
 import io
 from unittest.mock import patch
 
@@ -36,6 +37,7 @@ def _make_png_bytes() -> bytes:
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def client():
     """
@@ -56,6 +58,7 @@ def client():
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestUploadTenantIsolation:
     """

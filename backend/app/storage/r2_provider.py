@@ -4,6 +4,7 @@ Cloudflare R2 storage provider.
 R2 exposes the S3-compatible API, so we use boto3 with a custom endpoint URL.
 No egress fees and a generous free tier make it ideal for MVP asset storage.
 """
+
 import logging
 
 import boto3

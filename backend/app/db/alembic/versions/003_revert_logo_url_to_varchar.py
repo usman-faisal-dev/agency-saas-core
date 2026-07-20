@@ -7,17 +7,17 @@ Revision ID: 003
 Revises: 6295287caf8f
 Create Date: 2026-07-16
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '003'
-down_revision: Union[str, None] = '6295287caf8f'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "003"
+down_revision: str | None = "6295287caf8f"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -28,13 +28,15 @@ def upgrade() -> None:
     op.execute("UPDATE clients SET logo_url = NULL WHERE logo_url LIKE 'data:%'")
 
     op.alter_column(
-        'organizations', 'logo_url',
+        "organizations",
+        "logo_url",
         existing_type=sa.Text(),
         type_=sa.String(2048),
         existing_nullable=True,
     )
     op.alter_column(
-        'clients', 'logo_url',
+        "clients",
+        "logo_url",
         existing_type=sa.Text(),
         type_=sa.String(2048),
         existing_nullable=True,
@@ -43,13 +45,15 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.alter_column(
-        'clients', 'logo_url',
+        "clients",
+        "logo_url",
         existing_type=sa.String(2048),
         type_=sa.Text(),
         existing_nullable=True,
     )
     op.alter_column(
-        'organizations', 'logo_url',
+        "organizations",
+        "logo_url",
         existing_type=sa.String(2048),
         type_=sa.Text(),
         existing_nullable=True,

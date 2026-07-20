@@ -5,6 +5,7 @@ MVP: single row for one agency.
 Schema is forward-compatible with multi-org support — every tenant table
 carries org_id so future Postgres RLS is a policy addition, not a migration.
 """
+
 import uuid
 from datetime import datetime
 
@@ -17,9 +18,7 @@ from app.core.database import Base
 class Organization(Base):
     __tablename__ = "organizations"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     # logo_url stores a URL reference to the uploaded file in object storage
     logo_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)

@@ -5,12 +5,13 @@ Routes:
   GET  /api/v1/organizations/me  → return the current org's profile
   PATCH /api/v1/organizations/me → update agency name / logo_url
 """
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.exceptions import NotFoundError
-from app.dependencies import CurrentOrgId, CurrentUser
+from app.dependencies import CurrentOrgId
 from app.models.organization import Organization
 from app.schemas.organization import OrganizationRead, OrganizationUpdate
 

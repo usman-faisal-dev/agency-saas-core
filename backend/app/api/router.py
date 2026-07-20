@@ -6,6 +6,7 @@ Adding a new resource:
   1. Create backend/app/api/v1/<resource>.py with its APIRouter
   2. Import and include it below — nothing else to change.
 """
+
 from fastapi import APIRouter
 
 from app.api.v1 import (

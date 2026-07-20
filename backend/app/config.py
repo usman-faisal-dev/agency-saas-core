@@ -2,6 +2,7 @@
 Application settings loaded from environment variables via pydantic-settings.
 All configuration lives here — no os.environ calls anywhere else in the codebase.
 """
+
 from functools import lru_cache
 from typing import Literal
 
@@ -45,6 +46,7 @@ class Settings(BaseSettings):
                 return []
             if v.startswith("[") and v.endswith("]"):
                 import json
+
                 try:
                     return json.loads(v)
                 except json.JSONDecodeError:
@@ -67,6 +69,12 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = ""
     r2_bucket_name: str = "agency-saas-logos"
     r2_public_url: str = ""  # Required: custom domain or R2 dev URL for serving files
+
+    # ---- Sandbox credentials (Phase 1 simulated OAuth) ----
+    ga4_sandbox_access_token: str = "sandbox-ga4-access-token"
+    ga4_sandbox_refresh_token: str = "sandbox-ga4-refresh-token"
+    google_ads_sandbox_access_token: str = "sandbox-google-ads-access-token"
+    google_ads_sandbox_refresh_token: str = "sandbox-google-ads-refresh-token"
 
     @property
     def is_production(self) -> bool:
