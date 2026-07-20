@@ -62,13 +62,10 @@ def get_current_user(
     user = db.query(User).filter(User.clerk_user_id == clerk_user_id).first()
 
     if user is None:
-        # First login: ensure the single org exists, then create the user
-        org = db.query(Organization).first()
-        if org is None:
-            # Bootstrap the org on very first sign-in
-            org = Organization(name="My Agency")
-            db.add(org)
-            db.flush()  # get org.id without committing
+        # First login: create a fresh organization for the user
+        org = Organization(name="My Agency")
+        db.add(org)
+        db.flush()  # get org.id without committing
 
         user = User(
             clerk_user_id=clerk_user_id,
