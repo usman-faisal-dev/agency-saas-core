@@ -20,6 +20,8 @@ agency-saas-core/
 │   │   │   ├── dashboard/
 │   │   │   │   ├── AgencyProfileModal.tsx
 │   │   │   │   ├── AgencyProfileModal.module.css
+│   │   │   │   ├── AddClientModal.tsx
+│   │   │   │   ├── AddClientModal.module.css
 │   │   │   │   ├── ClientList.tsx
 │   │   │   │   └── ClientList.module.css
 │   │   │   ├── client-detail/
@@ -129,7 +131,7 @@ agency-saas-core/
 │   │   │   └── chat_context_builder.py # Builds pre-aggregated snapshot for chat injection
 │   │   │
 │   │   ├── storage/                     # File storage abstraction (logos, future assets)
-│   │   │   ├── __init__.py             # upload_logo() / delete_logo() convenience helpers
+│   │   │   ├── __init__.py             # upload_logo() / delete_logo() / extract_logo_key() helpers
 │   │   │   ├── interface.py             # Abstract StorageProvider base class
 │   │   │   ├── r2_provider.py           # Cloudflare R2 via boto3 (S3-compatible API)
 │   │   │   └── factory.py              # get_storage() — cached singleton, swap backend here
@@ -149,9 +151,11 @@ agency-saas-core/
 │   ├── tests/                           # pytest — targeted, per SPEC.md §7 discipline
 │   │   ├── conftest.py                  # Fixtures: test DB, fixture clients/orgs
 │   │   ├── test_tenant_isolation.py     # Cross-client data leak checks
+│   │   ├── test_clients_isolation.py    # Isolation tests for clients/accounts endpoints
 │   │   ├── test_token_encryption.py     # Encrypt/decrypt round-trip
 │   │   ├── test_report_pipeline.py      # Aggregation correctness + full pipeline
-│   │   └── test_upload_isolation.py     # Upload endpoint tenant-isolation (org_id from session only)
+│   │   ├── test_upload_isolation.py     # Upload endpoint tenant-isolation (org_id from session only)
+│   │   └── test_logo_cleanup.py         # R2 orphaned file cleanup tests
 │   │
 │   ├── .env.example
 │   ├── alembic.ini
