@@ -14,6 +14,10 @@ from app.core.exceptions import NotFoundError
 from app.dependencies import CurrentOrgId
 from app.models.organization import Organization
 from app.schemas.organization import OrganizationRead, OrganizationUpdate
+from app.storage import delete_logo, extract_logo_key
+
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
@@ -44,10 +48,23 @@ def update_my_organization(
     if org is None:
         raise NotFoundError("Organization not found")
 
+    old_logo_url = None
     update_data = payload.model_dump(exclude_none=True)
+    if "logo_url" in update_data and update_data["logo_url"] != org.logo_url:
+        old_logo_url = org.logo_url
+
     for field, value in update_data.items():
         setattr(org, field, value)
 
     db.commit()
     db.refresh(org)
+    
+    if old_logo_url:
+        key = extract_logo_key(old_logo_url)
+        if key:
+            try:
+                delete_logo(key)
+            except Exception as e:
+                logger.error(f"Failed to delete old organization logo {key}: {e}")
+
     return org

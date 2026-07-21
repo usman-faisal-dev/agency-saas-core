@@ -55,3 +55,16 @@ def upload_logo(
 def delete_logo(key: str) -> None:
     """Delete a logo object from storage. Idempotent."""
     get_storage().delete(key)
+
+
+def extract_logo_key(url: str | None) -> str | None:
+    """Extract the storage key from a full logo URL."""
+    if not url:
+        return None
+    try:
+        idx = url.find("logos/")
+        if idx != -1:
+            return url[idx:]
+    except Exception:
+        pass
+    return None

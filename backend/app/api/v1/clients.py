@@ -17,6 +17,10 @@ from app.core.exceptions import NotFoundError
 from app.dependencies import CurrentOrgId
 from app.models.client import Client
 from app.schemas.client import ClientCreate, ClientRead, ClientUpdate
+from app.storage import delete_logo, extract_logo_key
+
+import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -76,12 +80,25 @@ def update_client(
     """Update client name and/or logo_url. Only non-None fields are applied."""
     client = _get_client_or_404(client_id, org_id, db)
 
+    old_logo_url = None
     update_data = payload.model_dump(exclude_none=True)
+    if "logo_url" in update_data and update_data["logo_url"] != client.logo_url:
+        old_logo_url = client.logo_url
+
     for field, value in update_data.items():
         setattr(client, field, value)
 
     db.commit()
     db.refresh(client)
+    
+    if old_logo_url:
+        key = extract_logo_key(old_logo_url)
+        if key:
+            try:
+                delete_logo(key)
+            except Exception as e:
+                logger.error(f"Failed to delete old client logo {key}: {e}")
+
     return client
 
 
@@ -93,5 +110,13 @@ def delete_client(
 ) -> None:
     """Delete a client. Connected accounts are removed via ON DELETE CASCADE."""
     client = _get_client_or_404(client_id, org_id, db)
+    
+    logo_key = extract_logo_key(client.logo_url)
+    if logo_key:
+        try:
+            delete_logo(logo_key)
+        except Exception as e:
+            logger.error(f"Failed to delete client logo {logo_key} during client deletion: {e}")
+
     db.delete(client)
     db.commit()
