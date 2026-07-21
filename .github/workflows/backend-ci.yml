@@ -48,6 +48,10 @@ jobs:
       CLERK_SECRET_KEY: sk_test_placeholder
       CLERK_JWKS_URL: https://placeholder.clerk.accounts.dev/.well-known/jwks.json
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY || 'dGVzdGtleXRlc3RrZXl0ZXN0a2V5dGVzdGtleXQ=' }}
+      R2_ACCOUNT_ID: test_account_id
+      R2_ACCESS_KEY_ID: test_access_key
+      R2_SECRET_ACCESS_KEY: test_secret_key
+      R2_PUBLIC_URL: https://cdn.example.com
       CORS_ORIGINS: http://localhost:3000
       ENVIRONMENT: development
 
